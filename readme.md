@@ -1,0 +1,1 @@
+docker run -d -p 80:80 -p 6432:5432 -v /home/oldmanz/git/docker-local-dev/www:/var/www/ -v data:/var/lib/postgresql -v /home/oldmanz/git/docker-local-dev/dump:/dump --name dev oldmanzee/docker-local-dev:latest 
