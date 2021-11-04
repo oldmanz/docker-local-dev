@@ -33,7 +33,7 @@ if [ -d "/var/www/html/api" ]; then
 		sed -i "s/DB_DATABASE=spatialDB/DB_DATABASE=${DB_DATABASE}/g" .env
 
 		sed -i "s!# PYTHON_ENV=/home/jenkins/.virtualenv/agol-scripts/bin/python!PYTHON_ENV=/virtualenv/agol-scripts/bin/python!g" .env
-		sed -i "s!# PYTHON_DIR=/var/www/python/agol_scripts/!PYTHON_DIR=/var/www/python/agol-scripts!g" .env
+		sed -i "s!# PYTHON_DIR=/var/www/python/agol_scripts/!PYTHON_DIR=/var/www/python/agol-scripts/!g" .env
 
 		sed -i "s!# PYTHON_DB_FUNCTIONS_ENV=/home/jenkins/.virtualenv/db-functions/bin/python!PYTHON_DB_FUNCTIONS_ENV=/virtualenv/db-functions/bin/python!g" .env
 		sed -i "s!# PYTHON_DB_FUNCTIONS_DIR=/var/www/python/db_functions/!PYTHON_DB_FUNCTIONS_DIR=/var/www/python/db-functions!g" .env
@@ -143,6 +143,27 @@ if [ -d "/var/www/python/db-functions" ]; then
 
 fi
 
+
+####### Setup Jupyter Lab  ######
+
+if [ ! -d "/virtualenv/jupyterlab" ]; then
+	python3 -m venv /virtualenv/jupyterlab
+	source /virtualenv/jupyterlab/bin/activate
+	pip3 install wheel jupyterlab
+	pip3 install -r /opt/requirements/db-requirements.txt
+	deactivate
+fi
+
+/usr/bin/expect <<EOD
+spawn jupyter-lab password
+expect "Enter password:"
+send "Z\n"
+expect "Verify password:"
+send "Z\n"
+expect eof
+EOD
+
+jupyter-lab --allow-root --no-browser --ip 0.0.0.0
 
 
 

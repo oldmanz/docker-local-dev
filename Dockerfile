@@ -37,7 +37,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y libpq-dev \
   nano \
   unzip \
   build-essential \
-  libapache2-mod-wsgi-py3
+  libapache2-mod-wsgi-py3 \
+  expect
 
 
 RUN add-apt-repository ppa:deadsnakes/ppa
@@ -81,6 +82,8 @@ RUN chmod u+x /usr/bin/restore
 
 RUN a2enmod rewrite
 RUN a2enmod wsgi
+RUN a2enmod proxy
+RUN a2enmod proxy_http
 COPY conf/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 
