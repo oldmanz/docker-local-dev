@@ -38,14 +38,14 @@ RUN apt-get update && apt-get install --no-install-recommends -y libpq-dev \
   unzip \
   build-essential \
   libapache2-mod-wsgi-py3 \
-  expect
+  expect \
+  unoconv
 
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update && apt-get install --no-install-recommends -y python3.7 python3-pip python3-venv python3.7-dev python-dev python3-dev
 
-COPY conf/python/agol-requirements.txt /opt/requirements/agol-requirements.txt
-COPY conf/python/db-requirements.txt /opt/requirements/db-requirements.txt
+COPY conf/python/* /opt/requirements/
 
 RUN add-apt-repository ppa:ondrej/php
 RUN add-apt-repository ppa:ondrej/apache2
@@ -74,7 +74,7 @@ RUN update-alternatives --set php /usr/bin/php8.0
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN apt-get update
-RUN apt install --no-install-recommends -y postgresql-13-postgis-3
+RUN apt install --no-install-recommends -y postgis postgresql-13-postgis-3 postgresql-client-13
 
 COPY scripts/restore.sh /usr/bin/restore
 
@@ -84,14 +84,19 @@ RUN a2enmod rewrite
 RUN a2enmod wsgi
 RUN a2enmod proxy
 RUN a2enmod proxy_http
+RUN a2enmod proxy_wstunnel
+RUN sudo a2dismod --force autoindex
 COPY conf/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
+
+RUN cd /opt && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+RUN export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 
 RUN mkdir /virtualenv
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/
+WORKDIR /var/www/html
 
 COPY scripts/setup.sh /opt/setup.sh
 CMD bash -c "cd /opt && chmod 777 setup.sh && ./setup.sh"

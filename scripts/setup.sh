@@ -2,6 +2,10 @@
 
 DB_DATABASE=spatialdb
 
+source ~/.bashrc
+nvm install v12.22.7
+
+
 echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf
 echo 'host all all 0.0.0.0/0 md5' >> /etc/postgresql/13/main/pg_hba.conf	
 
@@ -46,6 +50,8 @@ if [ -d "/var/www/html/api" ]; then
 
 	chmod 777 -R storage/logs
 	chmod 777 -R storage/clockwork
+	chmod 777 storage/app/geoserver
+	chmod 777 storage/app/shapes
 
 fi
 
@@ -82,13 +88,6 @@ if [ -d "/var/www/html/report" ]; then
 		npm run gulp build
 	fi
 fi
-
-
-
-pip3 install pip-upgrader
-pip-upgrade /opt/requirements/* -p all --skip-package-installation 
-
-
 
 
 ###### Setup agol-scripts ########
@@ -140,19 +139,28 @@ if [ -d "/var/www/python/db-functions" ]; then
 
     touch /var/www/python//db-functions/db_functions.log
     chmod 777 /var/www/python/db-functions/db_functions.log
+    chmod 777 /var/www/python/db-functions/db_functions/uploads
 
 fi
 
 
+
+
 ####### Setup Jupyter Lab  ######
+
+cd /var/www/python
 
 if [ ! -d "/virtualenv/jupyterlab" ]; then
 	python3 -m venv /virtualenv/jupyterlab
 	source /virtualenv/jupyterlab/bin/activate
 	pip3 install wheel jupyterlab
-	pip3 install -r /opt/requirements/db-requirements.txt
+	pip3 install -r /opt/requirements/jupyter-requirements.txt
 	deactivate
 fi
+
+
+
+source /virtualenv/jupyterlab/bin/activate
 
 /usr/bin/expect <<EOD
 spawn jupyter-lab password
@@ -162,6 +170,8 @@ expect "Verify password:"
 send "Z\n"
 expect eof
 EOD
+
+echo "Setup Complete"
 
 jupyter-lab --allow-root --no-browser --ip 0.0.0.0
 
